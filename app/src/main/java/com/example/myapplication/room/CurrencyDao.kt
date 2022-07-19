@@ -16,13 +16,13 @@ interface CurrencyDao {
 
     //this table have only one row, so it will will retrun only one recode even we query to whole table
     @Query("SELECT * FROM currenciesmodellocal")
-    fun getSupportedCurrency(): Flow<CurrenciesModelLocal?>
+    fun getSupportedCurrency(): CurrenciesModelLocal?
 
     @Query("SELECT * FROM exchangeratemodellocal WHERE baseCurrencie == :curreny")
-    fun getExchangeRateByCurrencie(curreny: String):Flow<ExchangeRateModelLocal?>
+    fun getExchangeRateByCurrencies(curreny: String):ExchangeRateModelLocal?
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
-    fun insertExchangeRatesByCurreny(exchangeRateModelLocal:ExchangeRateModelLocal)
+    fun insertExchangeRatesByCurrency(exchangeRateModelLocal:ExchangeRateModelLocal)
 
 
 }

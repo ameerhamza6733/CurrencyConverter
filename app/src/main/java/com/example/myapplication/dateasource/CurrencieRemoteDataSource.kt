@@ -26,7 +26,7 @@ class CurrencieRemoteDataSource @Inject constructor(private val api: Api) {
                throw getGetCustomExceptionFromErrorCode(reponseBody.code(),reponseBody.errorBody())
            }
         }.onFailure {
-            throw Exception(it.message)
+            throw it
         }.getOrThrow()
 
     }
@@ -42,7 +42,7 @@ class CurrencieRemoteDataSource @Inject constructor(private val api: Api) {
             }
          }.onFailure {
             it.printStackTrace()
-            throw Exception(it.message)
+            throw it
          }.getOrThrow()
     }
 

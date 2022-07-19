@@ -1,7 +1,7 @@
 package com.example.myapplication.repository
 
 import android.util.Log
-import com.example.myapplication.Utils
+import com.example.myapplication.util.Utils
 import com.example.myapplication.dateasource.CurrencieRemoteDataSource
 import com.example.myapplication.di.RetrofitProviderModule
 import com.example.myapplication.model.local.CurrenciesModelLocal
@@ -35,9 +35,8 @@ class CurrencyRepository @Inject constructor(
 
     fun getExchangeRate(exchangeRateRequest: ExchangeRateRequest) = networkBoundResource(query = {
         Log.d(TAG, "load from dao ${exchangeRateRequest.baseCurrencie}")
-        db.currencyDao().getExchangeRateByCurrencie(exchangeRateRequest.baseCurrencie)
+        db.currencyDao().getExchangeRateByCurrencies(exchangeRateRequest.baseCurrencie)
     }, getFromNetwork = {
-        Log.d(TAG, "get from networl")
         if (exchangeRateRequest.equals("USD")) {
             ExchangeRateModelLocal(
                 baseCurrencie = exchangeRateRequest.baseCurrencie,
@@ -63,15 +62,14 @@ class CurrencyRepository @Inject constructor(
             )
         }
     }, saveToLocalDb = {
-        Log.d(TAG,"save to local database ${it?.baseCurrencie}")
-        db.currencyDao().insertExchangeRatesByCurreny(it!!)
+        db.currencyDao().insertExchangeRatesByCurrency(it!!)
     }, shouldUpdateCach = {
         if (it == null) {
             true
         } else {
             Utils.getTimeDifferenceInMints(
                 it.lastRefreshTime
-            ) > RetrofitProviderModule.THRESHOLD_API_REFRESH_TIME_MINTS
+            ) >= RetrofitProviderModule.THRESHOLD_API_REFRESH_TIME_MINTS
 
         }
 

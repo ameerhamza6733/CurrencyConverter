@@ -1,32 +1,31 @@
 package com.example.myapplication
 
-import android.util.Log
+import com.example.myapplication.util.Resource
 import kotlinx.coroutines.flow.*
 
 private val TAG="networkBoundResource"
 fun <ResultType, RequestType> networkBoundResource(
-    query: () -> Flow<ResultType?>,
+    query: () -> ResultType?,
     getFromNetwork: suspend () -> RequestType,
     saveToLocalDb: suspend (ResultType) -> Unit,
     shouldUpdateCach: (ResultType?) -> Boolean = { true }
 
 ) = flow {
     emit(Resource.Loading("Loading from disk",null))
-    val data=query().firstOrNull()
-   val flow= if (shouldUpdateCach(data)){
+    val dataFromLocal=query()
+   if (true){
         try {
             emit(Resource.Loading("Loading from network",null))
-           val list= getFromNetwork()
-            saveToLocalDb(list as ResultType)
-            query().map { Resource.Success(it) }
+           val dataFromNetwork= getFromNetwork()
+            saveToLocalDb(dataFromNetwork as ResultType)
+           emit( Resource.Success(dataFromNetwork) )
         }catch (throwable : Throwable){
-            throwable.printStackTrace()
-            query().map { Resource.Error(throwable,data) }
-
+            emit( Resource.Error(throwable,dataFromLocal,throwable.message.toString()) )
         }
     }else{
-        query().map { Resource.Success(it) }
+
+      emit(  Resource.Success(dataFromLocal) )
     }
-    emitAll(flow)
+
 
 }
