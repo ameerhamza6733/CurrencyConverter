@@ -44,8 +44,9 @@ class Utils {
                 Snackbar.make(
                     view,
                     "Internal network error",
-                    Snackbar.LENGTH_LONG
+                    Snackbar.LENGTH_INDEFINITE
                 ).setAction("tryAgain") {
+                    retryClick()
                 }.show()
             } else {
                 Snackbar.make(

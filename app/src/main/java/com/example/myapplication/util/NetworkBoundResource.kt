@@ -13,7 +13,7 @@ fun <ResultType, RequestType> networkBoundResource(
 ) = flow {
     emit(Resource.Loading("Loading from disk",null))
     val dataFromLocal=query()
-   if (true){
+   if (shouldUpdateCach(dataFromLocal)){
         try {
             emit(Resource.Loading("Loading from network",null))
            val dataFromNetwork= getFromNetwork()
@@ -23,7 +23,6 @@ fun <ResultType, RequestType> networkBoundResource(
             emit( Resource.Error(throwable,dataFromLocal,throwable.message.toString()) )
         }
     }else{
-
       emit(  Resource.Success(dataFromLocal) )
     }
 

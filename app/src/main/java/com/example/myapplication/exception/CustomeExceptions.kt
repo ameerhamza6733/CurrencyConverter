@@ -5,14 +5,12 @@ import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import okhttp3.ResponseBody
 
-
-class UnauthenticatedExeption(override val message: String? = null) : Exception()
-class RestrictedAccessException(override val message: String? = null) : Exception()
 class OverUseEXception(override val message: String?) : Exception()
 class AccessRestrictedException(override val message: String?) : Exception()
 class InvalideAppIDException(override val message: String?) : Exception()
 class NotAllowedException(override val message: String?) : Exception()
 class GetRatesByCurrencyException(override val message: String? = null) : Exception()
+class GetSupportedCurrencyListExcetion(override val message: String?):Exception()
 
 fun getGetCustomExceptionFromErrorCode(error: Int, errorBody: ResponseBody?): Throwable {
     val errorMessage = try {
@@ -38,7 +36,7 @@ fun getGetCustomExceptionFromErrorCode(error: Int, errorBody: ResponseBody?): Th
             return InvalideAppIDException(errorMessage?.description.toString())
         }
         else -> {
-            return Exception("Unknown error with error code ${error}")
+            return GetSupportedCurrencyListExcetion("Unknown error with error code ${error}")
         }
 
 

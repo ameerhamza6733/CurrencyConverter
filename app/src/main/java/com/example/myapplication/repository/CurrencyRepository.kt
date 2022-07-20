@@ -6,6 +6,7 @@ import com.example.myapplication.dateasource.CurrencieRemoteDataSource
 import com.example.myapplication.di.RetrofitProviderModule
 import com.example.myapplication.model.local.CurrenciesModelLocal
 import com.example.myapplication.model.local.ExchangeRateModelLocal
+import com.example.myapplication.model.remote.ExchangeRateReponse
 import com.example.myapplication.model.request.ExchangeRateRequest
 import com.example.myapplication.networkBoundResource
 import com.example.myapplication.room.CurrencyDataBase
@@ -24,18 +25,18 @@ class CurrencyRepository @Inject constructor(
         CurrenciesModelLocal(currenciesRespons = currencieRemoteDataSource.refreshCurrencyListCrash())
     }, saveToLocalDb = {
         db.currencyDao().insertSupportedCurrency(it!!)
-    }, shouldUpdateCach = {
-        if (it == null) {
+    }, shouldUpdateCach = {dateFromCache->
+        if (dateFromCache == null) {
             true
         } else {
-            Utils.getTimeDifferenceInMints(it?.lastRefreshTime) > RetrofitProviderModule.THRESHOLD_API_REFRESH_TIME_MINTS
+            Utils.getTimeDifferenceInMints(dateFromCache.lastRefreshTime) >= RetrofitProviderModule.THRESHOLD_API_REFRESH_TIME_MINTS
         }
 
     })
 
     fun getExchangeRate(exchangeRateRequest: ExchangeRateRequest) = networkBoundResource(query = {
-        Log.d(TAG, "load from dao ${exchangeRateRequest.baseCurrencie}")
-        db.currencyDao().getExchangeRateByCurrencies(exchangeRateRequest.baseCurrencie)
+        //try to load exchange rate from local if not found try to get usd
+        db.currencyDao().getExchangeRateByCurrencies(exchangeRateRequest.baseCurrencie) ?: convertCurrencyIntoUsdBasedOnHisUsdRate(db.currencyDao().getExchangeRateByCurrencies("USD")?.exchangeRateReponse,exchangeRateRequest)
     }, getFromNetwork = {
         if (exchangeRateRequest.equals("USD")) {
             ExchangeRateModelLocal(
@@ -44,35 +45,43 @@ class CurrencyRepository @Inject constructor(
                     exchangeRateRequest
                 )
             )
-
         } else {
+            //if this is not usd then we get usd rate and converter that rate into currency because in free account only usd rates are provided
             val response = currencieRemoteDataSource.getCurrencyEchangeRate(
                 ExchangeRateRequest("USD")
             )
-            val baseCurrencyInUsdRate = response?.rates?.get(exchangeRateRequest.baseCurrencie)
-            val map: HashMap<String, Double> = HashMap()
-            response?.rates?.forEach { (currency, rate) ->
-                map.put(currency, rate / baseCurrencyInUsdRate!!)
-            }
-            response?.rates = map
-            response?.base = exchangeRateRequest.baseCurrencie
-            ExchangeRateModelLocal(
-                baseCurrencie = exchangeRateRequest.baseCurrencie,
-                exchangeRateReponse = response
-            )
+            convertCurrencyIntoUsdBasedOnHisUsdRate(exchangeRateReponse =response,exchangeRateRequest )
         }
     }, saveToLocalDb = {
         db.currencyDao().insertExchangeRatesByCurrency(it!!)
-    }, shouldUpdateCach = {
-        if (it == null) {
+    }, shouldUpdateCach = {dateFromCache->
+        if (dateFromCache == null) {
             true
         } else {
             Utils.getTimeDifferenceInMints(
-                it.lastRefreshTime
+                dateFromCache.lastRefreshTime
             ) >= RetrofitProviderModule.THRESHOLD_API_REFRESH_TIME_MINTS
 
         }
 
     })
+
+     fun convertCurrencyIntoUsdBasedOnHisUsdRate(exchangeRateReponse: ExchangeRateReponse?, exchangeRateRequest: ExchangeRateRequest):ExchangeRateModelLocal?{
+        val baseCurrencyInUsdRate = exchangeRateReponse?.rates?.get(exchangeRateRequest.baseCurrencie)
+      return if (baseCurrencyInUsdRate==null){
+            null
+       }else{
+           val map: HashMap<String, Double> = HashMap()
+           exchangeRateReponse.rates.forEach { (currency, rate) ->
+               map.put(currency, rate / baseCurrencyInUsdRate)
+           }
+           exchangeRateReponse.rates = map
+           exchangeRateReponse.base = exchangeRateRequest.baseCurrencie
+           ExchangeRateModelLocal(
+               baseCurrencie = exchangeRateRequest.baseCurrencie,
+               exchangeRateReponse = exchangeRateReponse
+           )
+       }
+    }
 
 }

@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.myapplication.Log
 import com.example.myapplication.util.Resource
 import com.example.myapplication.util.Utils
 import com.example.myapplication.model.local.CurrenciesModelLocal
@@ -43,6 +44,7 @@ class CurrencyConverterFragmentViewModel @Inject constructor(private val currenc
 
 
     fun getSupportedCurrency() {
+        Log("getSupportedCurrency")
         viewModelScope.launch(Dispatchers.IO) {
             currencyRepository.getSupportedCurrency().collect {
                 _supportedCurrencyMutableLiveData.postValue(it)

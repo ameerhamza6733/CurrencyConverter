@@ -61,14 +61,18 @@ class CurrencyConverterFragment : Fragment(R.layout.fragment_currency_converter)
             supportedCurrencyObserver = Observer { resource ->
                 when (resource) {
                     is Resource.Loading -> {
+                        binding.edEnterAmount.visibility=View.INVISIBLE
+                        binding.btConverte.visibility=View.INVISIBLE
                         binding.progressCircular.visibility = View.VISIBLE
                     }
                     is Resource.Success -> {
-
+                        binding.edEnterAmount.visibility=View.VISIBLE
+                        binding.btConverte.visibility=View.VISIBLE
                         binding.progressCircular.visibility = View.INVISIBLE
                         resource.data?.currenciesRespons?.let { setDateToSpinner(it) }
                     }
                     is Resource.Error -> {
+
                         binding.progressCircular.visibility = View.INVISIBLE
                         setDateToSpinner(resource.data?.currenciesRespons)
                         Utils.showError(resource.error, binding.btConverte) {
@@ -95,8 +99,9 @@ class CurrencyConverterFragment : Fragment(R.layout.fragment_currency_converter)
                         binding.btConverte.isEnabled = true
                         setDateToCurrencyRecylerView(it.data)
                         Utils.showError(it.error, binding.btConverte) {
-                            binding.btConverte.callOnClick()
+                            viewModel.getExchangeRates()
                         }
+
                     }
                     is Resource.Success -> {
 
@@ -129,17 +134,19 @@ class CurrencyConverterFragment : Fragment(R.layout.fragment_currency_converter)
     }
 
     private fun setDateToSpinner(listCurrencyModel: List<CurrenciesResponse>?) {
-
+      val listOfCountryCode=  listCurrencyModel?.map { it.countryCode }
+        val indexOfUSD=listOfCountryCode?.indexOf("USD")
      listCurrencyModel?.let {
          val spinnerArrayAdapter: ArrayAdapter<String> =
              ArrayAdapter<String>(
                  requireActivity(),
                  android.R.layout.simple_spinner_item,
-                 listCurrencyModel.map { it.countryCode }
+                 listOfCountryCode
                      .orEmpty()
              )
          spinnerArrayAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
          binding.spinnerCurrency.adapter = spinnerArrayAdapter
+         indexOfUSD?.let { it1 -> binding.spinnerCurrency.setSelection(it1) };
          binding.spinnerCurrency.onItemSelectedListener = object :
              AdapterView.OnItemSelectedListener {
              override fun onItemSelected(

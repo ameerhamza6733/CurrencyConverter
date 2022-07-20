@@ -1,6 +1,7 @@
 package com.example.myapplication.di
 
 import android.content.Context
+import com.example.myapplication.BuildConfig
 import com.example.myapplication.R
 import com.example.myapplication.webservices.Api
 import dagger.Module
@@ -36,7 +37,7 @@ object RetrofitProviderModule {
             val request: Request.Builder = chain.request().newBuilder()
             val originalHttpUrl = chain.request().url
             val url = originalHttpUrl.newBuilder()
-                .addQueryParameter("app_id", appContext.getString(R.string.api_key)).build()
+                .addQueryParameter("app_id", BuildConfig.API_KEY).build()
             request.url(url)
             chain.proceed(request.build())
         })
@@ -45,7 +46,6 @@ object RetrofitProviderModule {
 
         return Retrofit
             .Builder()
-            .addConverterFactory(GsonConverterFactory.create())
             .client(client)
             .baseUrl(jsonFileUrl)
             .build()
