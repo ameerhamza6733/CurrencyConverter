@@ -1,6 +1,5 @@
 package com.example.myapplication.adupter
 
-import android.R.attr.data
 import android.view.LayoutInflater
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
@@ -8,10 +7,10 @@ import com.example.myapplication.databinding.CurrenciesRowBinding
 import com.example.myapplication.model.ui.CurrenciesListModelUI
 
 
-class CurrenciesListAdupter(val list: List<CurrenciesListModelUI>) : RecyclerView.Adapter<CurrenciesListAdupter.ViewHolder>() {
-   inner class ViewHolder(val binding:CurrenciesRowBinding):RecyclerView.ViewHolder(binding.root){
+class CurrenciesListAdapter(val list: List<CurrenciesListModelUI>) : RecyclerView.Adapter<CurrenciesListAdapter.ViewHolder>() {
+   inner class ViewHolder(private val binding:CurrenciesRowBinding):RecyclerView.ViewHolder(binding.root){
         fun bind()=binding.apply {
-            binding.currenciName.text=list[adapterPosition].baseCurreniesInto
+            binding.currenciName.text=list[adapterPosition].baseCurrenciesInto
             binding.currenciConvertedAmout.text=list[adapterPosition].amountConversion
         }
     }

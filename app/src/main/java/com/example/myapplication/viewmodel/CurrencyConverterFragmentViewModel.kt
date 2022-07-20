@@ -42,6 +42,7 @@ class CurrencyConverterFragmentViewModel @Inject constructor(private val currenc
     private val _amountMutableLiveData: MutableLiveData<Double?> = MutableLiveData()
     val amountLiveData: LiveData<Double?> = _amountMutableLiveData
 
+    val currenciesRecyclerViewPosition=0
 
     fun getSupportedCurrency() {
         Log("getSupportedCurrency")

@@ -30,7 +30,7 @@ class Utils {
                 listModelUI.add(
                     CurrenciesListModelUI(
                         baseCurrencies,
-                        baseCurreniesInto = "$currency ",
+                        baseCurrenciesInto = "$currency ",
                         amountConversion = String.format("%.2f", amount * rate)
                     )
                 )

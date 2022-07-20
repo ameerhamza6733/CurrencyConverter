@@ -64,9 +64,10 @@ class CurrencyRepository @Inject constructor(
 
         }
 
+
     })
 
-     fun convertCurrencyIntoUsdBasedOnHisUsdRate(exchangeRateReponse: ExchangeRateReponse?, exchangeRateRequest: ExchangeRateRequest):ExchangeRateModelLocal?{
+     private fun convertCurrencyIntoUsdBasedOnHisUsdRate(exchangeRateReponse: ExchangeRateReponse?, exchangeRateRequest: ExchangeRateRequest):ExchangeRateModelLocal?{
         val baseCurrencyInUsdRate = exchangeRateReponse?.rates?.get(exchangeRateRequest.baseCurrencie)
       return if (baseCurrencyInUsdRate==null){
             null

@@ -5,13 +5,14 @@ import android.text.TextUtils
 import android.view.View
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
+import android.widget.Toast
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.viewModels
 import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.GridLayoutManager
 import com.example.myapplication.R
-import com.example.myapplication.adupter.CurrenciesListAdupter
+import com.example.myapplication.adupter.CurrenciesListAdapter
 import com.example.myapplication.databinding.FragmentCurrencyConverterBinding
 import com.example.myapplication.model.local.CurrenciesModelLocal
 import com.example.myapplication.model.remote.CurrenciesResponse
@@ -29,10 +30,9 @@ class CurrencyConverterFragment : Fragment(R.layout.fragment_currency_converter)
     private val viewModel by viewModels<CurrencyConverterFragmentViewModel>()
     private val binding by viewBinding(FragmentCurrencyConverterBinding::bind)
     private var supportedCurrencyObserver: Observer<Resource<CurrenciesModelLocal?>>? = null
-    private var currenciesExchangeRateObserver: Observer<Resource<List<CurrenciesListModelUI>>>? =
-        null
+    private var currenciesExchangeRateObserver: Observer<Resource<List<CurrenciesListModelUI>>>? = null
     private var userSelectCurrency: Observer<String>? = null
-    private var currenciesListAdupter: CurrenciesListAdupter? = null
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -69,12 +69,14 @@ class CurrencyConverterFragment : Fragment(R.layout.fragment_currency_converter)
                         binding.edEnterAmount.visibility=View.VISIBLE
                         binding.btConverte.visibility=View.VISIBLE
                         binding.progressCircular.visibility = View.INVISIBLE
-                        resource.data?.currenciesRespons?.let { setDateToSpinner(it) }
+                        resource.data?.currenciesRespons?.let { setDateToAvailableCurrenciesSpinner(it) }
                     }
                     is Resource.Error -> {
 
                         binding.progressCircular.visibility = View.INVISIBLE
-                        setDateToSpinner(resource.data?.currenciesRespons)
+                        setDateToAvailableCurrenciesSpinner(resource.data?.currenciesRespons)
+                        resource.data?.let { Toast.makeText(requireActivity(),"Data from cache",Toast.LENGTH_SHORT).show() }
+
                         Utils.showError(resource.error, binding.btConverte) {
                             viewModel.getSupportedCurrency()
                         }
@@ -97,7 +99,8 @@ class CurrencyConverterFragment : Fragment(R.layout.fragment_currency_converter)
                         binding.progressCircular.visibility = View.INVISIBLE
                         binding.edEnterAmount.isEnabled = true
                         binding.btConverte.isEnabled = true
-                        setDateToCurrencyRecylerView(it.data)
+                        setDateToCurrencyRecyclerView(it.data)
+                        it.data?.let { Toast.makeText(requireActivity(),"Data from cache",Toast.LENGTH_SHORT).show() }
                         Utils.showError(it.error, binding.btConverte) {
                             viewModel.getExchangeRates()
                         }
@@ -108,7 +111,7 @@ class CurrencyConverterFragment : Fragment(R.layout.fragment_currency_converter)
                         binding.progressCircular.visibility = View.INVISIBLE
                         binding.edEnterAmount.isEnabled = true
                         binding.btConverte.isEnabled = true
-                        setDateToCurrencyRecylerView(it.data)
+                        setDateToCurrencyRecyclerView(it.data)
                     }
                     is Resource.Loading -> {
                         binding.progressCircular.visibility = View.VISIBLE
@@ -124,16 +127,15 @@ class CurrencyConverterFragment : Fragment(R.layout.fragment_currency_converter)
         viewModel.supportedCurrencyLiveData.observe(viewLifecycleOwner, supportedCurrencyObserver!!)
     }
 
-    private fun setDateToCurrencyRecylerView(list: List<CurrenciesListModelUI>?) {
+    private fun setDateToCurrencyRecyclerView(list: List<CurrenciesListModelUI>?) {
         list?.let {
-            currenciesListAdupter = CurrenciesListAdupter(it)
-            binding.listCurrences.adapter = currenciesListAdupter
+            binding.listCurrences.adapter =  CurrenciesListAdapter(it)
             binding.listCurrences.layoutManager = GridLayoutManager(requireActivity(), 3)
         }
 
     }
 
-    private fun setDateToSpinner(listCurrencyModel: List<CurrenciesResponse>?) {
+    private fun setDateToAvailableCurrenciesSpinner(listCurrencyModel: List<CurrenciesResponse>?) {
       val listOfCountryCode=  listCurrencyModel?.map { it.countryCode }
         val indexOfUSD=listOfCountryCode?.indexOf("USD")
      listCurrencyModel?.let {
